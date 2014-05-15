@@ -28,3 +28,7 @@ results
 
 npm-debug.log
 node_modules
+
+public/client/built.min.js
+public/client/built.js
+public/style.min.css
