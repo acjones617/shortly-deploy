@@ -2,7 +2,23 @@ module.exports = function(grunt) {
 
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
+
     concat: {
+      options: {
+        separator: ';',
+      },
+      dist: {
+        src: [
+          'public/client/app.js',
+          'public/client/link.js',
+          'public/client/links.js',
+          'public/client/linkView.js',
+          'public/client/linksView.js',
+          'public/client/createLinkView.js',
+          'public/client/router.js'
+        ],
+        dest: 'public/built.js',
+      },
     },
 
     mochaTest: {
@@ -21,14 +37,25 @@ module.exports = function(grunt) {
     },
 
     uglify: {
+      backbone: {
+        files: {
+          'public/built.min.js': ['public/built.js']
+        }
+      }
+      //do stuff
     },
 
     jshint: {
       files: [
         // Add filespec list here
+        'public/client/**/*.js',
+        'server.js',
+        'server-config.js',
+        'app/**/*.js',
+        'lib/**/*.js'
       ],
       options: {
-        force: 'true',
+        force: 'false',
         jshintrc: '.jshintrc',
         ignores: [
           'public/lib/**/*.js',
@@ -38,6 +65,9 @@ module.exports = function(grunt) {
     },
 
     cssmin: {
+      files: {
+        'public/style.min.css': ['public/style.css']
+      }
     },
 
     watch: {
@@ -59,6 +89,7 @@ module.exports = function(grunt) {
 
     shell: {
       prodServer: {
+        command: 'git push azure master'
       }
     },
   });
@@ -89,24 +120,33 @@ module.exports = function(grunt) {
   // Main grunt tasks
   ////////////////////////////////////////////////////
 
+  grunt.registerTask('default', [
+    'build'
+  ]);
+
   grunt.registerTask('test', [
-    'mochaTest'
+    'mochaTest',
   ]);
 
   grunt.registerTask('build', [
+    'concat',
+    'uglify:backbone',
+    'cssmin'
   ]);
 
   grunt.registerTask('upload', function(n) {
     if(grunt.option('prod')) {
       // add your production server task here
+      grunt.task.run([ 'shell:prodServer' ]);
     } else {
       grunt.task.run([ 'server-dev' ]);
     }
   });
 
   grunt.registerTask('deploy', [
-    // add your deploy tasks here
+    'jshint',
+    'test',
+    'upload'
   ]);
-
 
 };
